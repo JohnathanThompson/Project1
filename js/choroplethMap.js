@@ -5,7 +5,7 @@ class ChoroplethMap {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data) {
+  constructor(_config, _data, _title, _units, _acronym) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 1000,
@@ -21,6 +21,12 @@ class ChoroplethMap {
     // this.config = _config;
 
     this.us = _data;
+
+    this.title = _title
+
+    this.units = _units
+
+    this.acronym = _acronym
 
     this.active = d3.select(null);
 
@@ -43,10 +49,16 @@ class ChoroplethMap {
         .attr('width', vis.config.containerWidth)
         .attr('height', vis.config.containerHeight);
 
+    vis.svg.append("text")
+            .attr("x", vis.width/3)
+            .attr("y", vis.config.margin.top + 20)
+            .attr("font-size", "20px")
+            .text(this.title)
+
     vis.svg.append('rect')
             .attr('class', 'background center-container')
             .attr('height', vis.config.containerWidth ) //height + margin.top + margin.bottom)
-            .attr('width', vis.config.containerHeight) //width + margin.left + margin.right)
+            .attr('width', vis.config.containerHeight + 100) //width + margin.left + margin.right)
             .on('click', vis.clicked);
 
   
@@ -55,7 +67,7 @@ class ChoroplethMap {
             .scale(vis.width);
 
     vis.colorScale = d3.scaleLinear()
-      .domain(d3.extent(vis.data.objects.counties.geometries, d => d.properties.pop))
+      .domain(d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.acronym]))
         .range(['#cfe2f2', '#0d306b'])
         .interpolate(d3.interpolateHcl);
 
@@ -77,8 +89,8 @@ class ChoroplethMap {
                 .attr("d", vis.path)
                 // .attr("class", "county-boundary")
                 .attr('fill', d => {
-                      if (d.properties.pop) {
-                        return vis.colorScale(d.properties.pop);
+                      if (d.properties[this.acronym]) {
+                        return vis.colorScale(d.properties[this.acronym]);
                       } else {
                         return 'url(#lightstripe)';
                       }
@@ -88,7 +100,7 @@ class ChoroplethMap {
                 .on('mousemove', (d,event) => {
                   console.log(d);
                   console.log(event);
-                    const popDensity = d.properties.pop ? `<strong>${d.properties.pop}</strong> pop. density per km<sup>2</sup>` : 'No data available'; 
+                    const popDensity = d.properties[this.acronym] ? `<strong>${d.properties[this.acronym]}</strong> ${this.units}` : 'No data available'; 
                     d3.select('#tooltip')
                       .style('display', 'block')
                       .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
