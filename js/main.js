@@ -30,17 +30,96 @@ Promise.all([
         d.properties["stroke"] = +nationalHealthData[i].percent_stroke;
         d.properties["chol"] = +nationalHealthData[i].percent_high_cholesterol
       }
-
-
     }
   });
 
-  const choroplethMap = new ChoroplethMap({ 
-    parentElement: '.viz',   
-  }, geoData, "Median Household Income", "median income", "med");
+  const health_data_dict = {
+    poverty_perc: {
+      acronym: "pov",
+      units: "% in Poverty",
+      title: "Poverty Percentage"},
+    median_household_income: {
+      acronym: "med",
+      units: "Median",
+      title: "Median Income"},
+    education_less_than_high_school_percent: {
+      acronym: "edu",
+      units: "%",
+      title: "% of People who did not Graduate High School"},
+    "air_quality": {
+      acronym: "air",
+      units: "",
+      title: "Air Quality"},
+    "park_access": {
+      acronym: "park",
+      units: "",
+      title: "Park Access"},
+    "percent_inactive": {
+      acronym: "inactive",
+      units: "%",
+      title: "Percentage of People Inactive"},
+    "percent_smoking": {
+      acronym: "smoke",
+      units: "%",
+      title: "% of Smokers"},
+    "urban_rural_status": {
+      acronym: "urban",
+      units: "",
+      title: "Urban or Rural"},
+    "elderly_percentage": {
+      acronym: "elder",
+      units: "%",
+      title: "Elderly Percentage"},
+    "number_of_hospitals": {
+      acronym: "hosp",
+      units: "hospitals",
+      title: "Number of Hospitals"},
+    "number_of_primary_care_physicians": {
+      acronym: "phys",
+      units: "physicians",
+      title: "Number of primary care physicians"},
+    "percent_no_heath_insurance": {
+      acronym: "ins",
+      units: "%",
+      title: "% of People with no Health Insurance"},
+    "percent_high_blood_pressure": {
+      acronym: "hbp",
+      units: "%",
+      title: "a"},
+    "percent_coronary_heart_disease": {
+      acronym: "chd",
+      units: "%",
+      title: "% of People with Coronary Heart Disease"},
+    "percent_stroke": {
+      acronym: "stroke",
+      units: "%",
+      title: "% of People Who Had a Stroke"},
+    "percent_high_cholesterol": {
+      acronym: "chol",
+      units: "%",
+      title: "% of People with High Cholestoral"},}
 
-  const choroplethMapEducation = new ChoroplethMap({ 
-    parentElement: '.viz',   
-  }, geoData, "Highschool Graduation Percentage", "% graduated", "edu");
-})
+  const createMap = () => {
+
+    d3.selectAll("svg").remove();
+
+    var attribute1 = document.getElementById("attribute");
+    var attribute1_value = attribute1.value
+
+    var attribute2 = document.getElementById("attribute2");
+    var attribute2_value = attribute2.value
+
+    const choroplethMap1 = new ChoroplethMap({ 
+      parentElement: '.viz',   
+    }, geoData, health_data_dict[attribute1_value].title, health_data_dict[attribute1_value].units, health_data_dict[attribute1_value].acronym);
+
+    const choroplethMap2 = new ChoroplethMap({ 
+      parentElement: '.viz',   
+    }, geoData, health_data_dict[attribute2_value].title, health_data_dict[attribute2_value].units, health_data_dict[attribute2_value].acronym);  }
+
+  document.getElementById("button").addEventListener("click", createMap);
+}
+
+
+)
 .catch(error => console.error(error));

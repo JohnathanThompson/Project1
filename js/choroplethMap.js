@@ -89,6 +89,7 @@ class ChoroplethMap {
                 .attr("d", vis.path)
                 // .attr("class", "county-boundary")
                 .attr('fill', d => {
+                      console.log(this.acronym)
                       if (d.properties[this.acronym]) {
                         return vis.colorScale(d.properties[this.acronym]);
                       } else {
@@ -98,8 +99,8 @@ class ChoroplethMap {
 
       vis.counties
                 .on('mousemove', (d,event) => {
-                  console.log(d);
-                  console.log(event);
+                  console.log(this.acronym);
+                  console.log(this.acronym);
                     const popDensity = d.properties[this.acronym] ? `<strong>${d.properties[this.acronym]}</strong> ${this.units}` : 'No data available'; 
                     d3.select('#tooltip')
                       .style('display', 'block')

@@ -27,6 +27,7 @@ class Histogram {
       this.units = _units
   
       this.acronym = _acronym
+      console.log(this.acronym)
   
       this.active = d3.select(null);
   
