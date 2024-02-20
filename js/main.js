@@ -4,10 +4,12 @@
 
 Promise.all([
   d3.json('data/counties-10m.json'),
-  d3.csv('data/national_health_data.csv')
+  d3.csv('data/national_health_data.csv'),
+  d3.csv('data/vancouver_trails.csv')
 ]).then(data => {
   const geoData = data[0];
   const nationalHealthData = data[1];
+  const testData = data[2]
 
   // Combine both datasets by adding the population density to the TopoJSON file
   geoData.objects.counties.geometries.forEach(d => {  
@@ -34,15 +36,15 @@ Promise.all([
   });
 
   const health_data_dict = {
-    poverty_perc: {
+    "poverty_perc": {
       acronym: "pov",
       units: "% in Poverty",
       title: "Poverty Percentage"},
-    median_household_income: {
+    "median_household_income": {
       acronym: "med",
       units: "Median",
       title: "Median Income"},
-    education_less_than_high_school_percent: {
+    "education_less_than_high_school_percent": {
       acronym: "edu",
       units: "%",
       title: "% of People who did not Graduate High School"},
@@ -99,23 +101,33 @@ Promise.all([
       units: "%",
       title: "% of People with High Cholestoral"},}
 
-  const createMap = () => {
+  testData.forEach(d => {
+    d.time = +d.time;
+    d.distance = +d.distance;
+  });
 
-    d3.selectAll("svg").remove();
+  scatterplot = new Scatterplot({ parentElement: '#scatterplot'}, geoData.objects.counties.geometries);
+  scatterplot.updateVis();
+
+  const createMap = () => {
 
     var attribute1 = document.getElementById("attribute");
     var attribute1_value = attribute1.value
 
     var attribute2 = document.getElementById("attribute2");
     var attribute2_value = attribute2.value
+    console.log(health_data_dict[attribute1_value])
+    scatterplot = new Scatterplot({ parentElement: '#scatterplot'}, geoData, health_data_dict[attribute1_value], health_data_dict[attribute2_value]);
+    scatterplot.updateVis();
 
-    const choroplethMap1 = new ChoroplethMap({ 
-      parentElement: '.viz',   
-    }, geoData, health_data_dict[attribute1_value].title, health_data_dict[attribute1_value].units, health_data_dict[attribute1_value].acronym);
+    //const choroplethMap1 = new ChoroplethMap({ 
+    //  parentElement: '.viz',   
+    //}, geoData, health_data_dict[attribute1_value].title, health_data_dict[attribute1_value].units, health_data_dict[attribute1_value].acronym);
 
-    const choroplethMap2 = new ChoroplethMap({ 
-      parentElement: '.viz',   
-    }, geoData, health_data_dict[attribute2_value].title, health_data_dict[attribute2_value].units, health_data_dict[attribute2_value].acronym);  }
+    // const choroplethMap2 = new ChoroplethMap({ 
+    //   parentElement: '.viz',   
+    // }, geoData, health_data_dict[attribute2_value].title, health_data_dict[attribute2_value].units, health_data_dict[attribute2_value].acronym);  
+}
 
   document.getElementById("button").addEventListener("click", createMap);
 }

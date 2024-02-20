@@ -44,11 +44,14 @@ class Histogram {
       vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
       vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
   
-      // Define size of SVG drawing area
-      vis.svg = d3.select(vis.config.parentElement).append('svg')
-          .attr('class', 'center-container')
-          .attr('width', vis.config.containerWidth)
-          .attr('height', vis.config.containerHeight);
+      // append the svg object to the body of the page
+      var svg = d3.select("#my_dataviz")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
   
         
       vis.svg.append('rect')

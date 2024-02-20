@@ -1,83 +1,143 @@
 class Scatterplot {
 
-    /**
-     * Class constructor with basic configuration
-     * @param {Object}
-     * @param {Array}
-     */
-    constructor(_config, _data, _title, _units, _acronym) {
-      this.config = {
-        parentElement: _config.parentElement,
-        containerWidth: _config.containerWidth || 1000,
-        containerHeight: _config.containerHeight || 500,
-        margin: _config.margin || {top: 10, right: 10, bottom: 10, left: 10},
-        tooltipPadding: 10,
-        legendBottom: 50,
-        legendLeft: 50,
-        legendRectHeight: 12, 
-        legendRectWidth: 150
-      }
-      this.data = _data;
-      // this.config = _config;
-  
-      this.us = _data;
-  
-      this.title = _title
-  
-      this.units = _units
-  
-      this.acronym = _acronym
-  
-      this.active = d3.select(null);
-  
-      this.initVis();
+  /**
+   * Class constructor with basic chart configuration
+   * @param {Object}
+   * @param {Array}
+   */
+  constructor(_config, _data) {
+    this.config = {
+      parentElement: _config.parentElement,
+      containerWidth: _config.containerWidth || 700,
+      containerHeight: _config.containerHeight || 500,
+      margin: _config.margin || {top: 25, right: 60, bottom: 20, left: 65},
+      tooltipPadding: _config.tooltipPadding || 15
     }
-    
-    /**
-     * We initialize scales/axes and append static elements, such as axis titles.
-     */
-    initVis() {
-      let vis = this;
-  
-      // Calculate inner chart size. Margin specifies the space around the actual chart.
-      vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
-      vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
-  
-      // Define size of SVG drawing area
-      vis.svg = d3.select(vis.config.parentElement).append('svg')
-          .attr('class', 'center-container')
-          .attr('width', vis.config.containerWidth)
-          .attr('height', vis.config.containerHeight);
-  
-        
-      vis.svg.append('rect')
-              .attr('class', 'background center-container')
-              .attr('height', vis.config.containerWidth ) //height + margin.top + margin.bottom)
-              .attr('width', vis.config.containerHeight + 100) //width + margin.left + margin.right)
-              .on('click', vis.clicked);
-  
-    
-      vis.projection = d3.geoAlbersUsa()
-              .translate([vis.width /2 , vis.height / 2])
-              .scale(vis.width);
-  
-      vis.colorScale = d3.scaleLinear()
-        .domain(d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.acronym]))
-          .range(['#cfe2f2', '#0d306b'])
-          .interpolate(d3.interpolateHcl);
-  
-      vis.path = d3.geoPath()
-              .projection(vis.projection);
-  
-      vis.g = vis.svg.append("g")
-              .attr('class', 'center-container center-items us-state')
-              .attr('transform', 'translate('+vis.config.margin.left+','+vis.config.margin.top+')')
-              .attr('width', vis.width + vis.config.margin.left + vis.config.margin.right)
-              .attr('height', vis.height + vis.config.margin.top + vis.config.margin.bottom)
-  
-
-  
-    }
-  
-    
+    this.data = _data;
+    this.initVis();
   }
+  
+  /**
+   * We initialize scales/axes and append static elements, such as axis titles.
+   */
+  initVis() {
+    let vis = this;
+
+    // Calculate inner chart size. Margin specifies the space around the actual chart.
+    vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
+    vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
+
+    // Initialize scales
+    vis.colorScale = d3.scaleOrdinal()
+        .range(['#d3eecd', '#7bc77e', '#2a8d46']) // light green to dark green
+        .domain(['Easy','Intermediate','Difficult']);
+
+    vis.xScale = d3.scaleLinear()
+        .range([0, vis.width]);
+
+    vis.yScale = d3.scaleLinear()
+        .range([vis.height, 0]);
+
+    // Initialize axes
+    vis.xAxis = d3.axisBottom(vis.xScale)
+        .ticks(6)
+        .tickSize(-vis.height - 10)
+        .tickPadding(10)
+        .tickFormat(d => d + ' km');
+
+    vis.yAxis = d3.axisLeft(vis.yScale)
+        .ticks(6)
+        .tickSize(-vis.width - 10)
+        .tickPadding(10)
+        .tickFormat(d => d + ' km');;
+
+    // Define size of SVG drawing area
+    vis.svg = d3.select(vis.config.parentElement)
+        .attr('width', vis.config.containerWidth)
+        .attr('height', vis.config.containerHeight);
+
+    // Append group element that will contain our actual chart 
+    // and position it according to the given margin config
+    vis.chart = vis.svg.append('g')
+        .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
+
+    // Append empty x-axis group and move it to the bottom of the chart
+    vis.xAxisG = vis.chart.append('g')
+        .attr('class', 'axis x-axis')
+        .attr('transform', `translate(0,${vis.height})`);
+    
+    // Append y-axis group
+    vis.yAxisG = vis.chart.append('g')
+        .attr('class', 'axis y-axis');
+
+    // Append both axis titles
+    vis.chart.append('text')
+        .attr('class', 'axis-title')
+        .attr('y', vis.height - 15)
+        .attr('x', vis.width + 10)
+        .attr('dy', '.71em')
+        .style('text-anchor', 'end')
+        .text('Distance');
+
+    vis.svg.append('text')
+        .attr('class', 'axis-title')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('dy', '.71em')
+        .text('Hours');
+
+    // Specificy accessor functions
+    vis.xValue = d => d.properties["pov"];
+    vis.yValue = d => d.properties["med"];
+  }
+
+  /**
+   * Prepare the data and scales before we render it.
+   */
+  updateVis() {
+    let vis = this;
+    
+    // Set the scale input domains
+    vis.xScale.domain([0, d3.max(vis.data, vis.xValue)]);
+    vis.yScale.domain([0, d3.max(vis.data, vis.yValue)]);
+
+    // Add circles
+    vis.circles = vis.chart.selectAll('.point')
+        .data(vis.data, d => d.properties.name)
+      .join('circle')
+        .attr('class', 'point')
+        .attr('r', 4)
+        .attr('cy', d => vis.yScale(vis.yValue(d)))
+        .attr('cx', d => vis.xScale(vis.xValue(d)))
+        .attr('fill', 'red');
+
+
+    // Tooltip event listeners
+    vis.circles
+        .on('mouseover', (event,d) => {
+            const popDensity = d.properties[this.acronym] ? `<strong>${d.properties[this.acronym]}</strong> ${this.units}` : 'No data available'; 
+            d3.select('#tooltip')
+                .style('display', 'block')
+                .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
+                .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
+                .html(`
+                <div class="tooltip-title">${d.properties.name}</div>
+                <div>${popDensity}</div>
+                `);
+            })
+        .on('mouseleave', () => {
+          d3.select('#tooltip').style('display', 'none');
+        });
+    
+    // Update the axes/gridlines
+    // We use the second .call() to remove the axis and just show gridlines
+    vis.xAxisG
+        .call(vis.xAxis)
+        .call(g => g.select('.domain').remove());
+
+    vis.yAxisG
+        .call(vis.yAxis)
+        .call(g => g.select('.domain').remove())
+  }
+
+}
