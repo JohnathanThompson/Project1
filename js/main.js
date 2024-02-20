@@ -106,9 +106,6 @@ Promise.all([
     d.distance = +d.distance;
   });
 
-  scatterplot = new Scatterplot({ parentElement: '#scatterplot'}, geoData.objects.counties.geometries);
-  scatterplot.updateVis();
-
   const createMap = () => {
 
     var attribute1 = document.getElementById("attribute");
@@ -117,8 +114,8 @@ Promise.all([
     var attribute2 = document.getElementById("attribute2");
     var attribute2_value = attribute2.value
     console.log(health_data_dict[attribute1_value])
-    scatterplot = new Scatterplot({ parentElement: '#scatterplot'}, geoData, health_data_dict[attribute1_value], health_data_dict[attribute2_value]);
-    scatterplot.updateVis();
+  scatterplot = new Scatterplot({ parentElement: '#scatterplot'}, geoData.objects.counties.geometries, health_data_dict[attribute1_value], health_data_dict[attribute2_value]);
+  scatterplot.updateVis();
 
     //const choroplethMap1 = new ChoroplethMap({ 
     //  parentElement: '.viz',   

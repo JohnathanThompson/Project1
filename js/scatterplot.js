@@ -5,7 +5,7 @@ class Scatterplot {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data) {
+  constructor(_config, _data, _acronym1, _acronym2) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 700,
@@ -14,6 +14,8 @@ class Scatterplot {
       tooltipPadding: _config.tooltipPadding || 15
     }
     this.data = _data;
+    this.acronym1 = _acronym1
+    this.acronym2 = _acronym2
     this.initVis();
   }
   
@@ -77,14 +79,14 @@ class Scatterplot {
         .attr('x', vis.width + 10)
         .attr('dy', '.71em')
         .style('text-anchor', 'end')
-        .text('Distance');
+        .text(this.acronym2.title);
 
     vis.svg.append('text')
         .attr('class', 'axis-title')
         .attr('x', 0)
         .attr('y', 0)
         .attr('dy', '.71em')
-        .text('Hours');
+        .text(this.acronym1.title);
 
     // Specificy accessor functions
     vis.xValue = d => d.properties["pov"];
