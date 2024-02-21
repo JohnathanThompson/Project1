@@ -66,10 +66,17 @@ class ChoroplethMap {
             .translate([vis.width /2 , vis.height / 2])
             .scale(vis.width);
 
-    vis.colorScale = d3.scaleLinear()
-      .domain(d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.acronym]))
-        .range(['#cfe2f2', '#0d306b'])
-        .interpolate(d3.interpolateHcl);
+    if (this.acronym == "urban") {
+      vis.colorScale = d3.scaleOrdinal()
+          .range(['#d3eecd', '#7bc77e', '#2a8d46', "#1b562b"]) // light green to dark green
+          .domain(['Rural','Suburban','Small City', "Urban"]);
+    }
+    else {
+      vis.colorScale = d3.scaleLinear()
+        .domain(d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.acronym]))
+          .range(['#cfe2f2', '#0d306b'])
+          .interpolate(d3.interpolateHcl);
+    }
 
     vis.path = d3.geoPath()
             .projection(vis.projection);
@@ -89,7 +96,6 @@ class ChoroplethMap {
                 .attr("d", vis.path)
                 // .attr("class", "county-boundary")
                 .attr('fill', d => {
-                      console.log(this.acronym)
                       if (d.properties[this.acronym]) {
                         return vis.colorScale(d.properties[this.acronym]);
                       } else {
@@ -98,9 +104,7 @@ class ChoroplethMap {
                     });
 
       vis.counties
-                .on('mousemove', (d,event) => {
-                  console.log(this.acronym);
-                  console.log(this.acronym);
+                .on('mousemove', (event, d) => {
                     const popDensity = d.properties[this.acronym] ? `<strong>${d.properties[this.acronym]}</strong> ${this.units}` : 'No data available'; 
                     d3.select('#tooltip')
                       .style('display', 'block')
