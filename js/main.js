@@ -4,12 +4,10 @@
 
 Promise.all([
   d3.json('data/counties-10m.json'),
-  d3.csv('data/national_health_data.csv'),
-  d3.csv('data/vancouver_trails.csv')
+  d3.csv('data/national_health_data.csv')
 ]).then(data => {
   const geoData = data[0];
   const nationalHealthData = data[1];
-  const testData = data[2]
 
   // Combine both datasets by adding the population density to the TopoJSON file
   geoData.objects.counties.geometries.forEach(d => {  
@@ -22,7 +20,7 @@ Promise.all([
         d.properties["park"] = +nationalHealthData[i].park_access;
         d.properties["inactive"] = +nationalHealthData[i].percent_inactive;
         d.properties["smoke"] = +nationalHealthData[i].percent_smoking;
-        d.properties["urban"] = +nationalHealthData[i].urban_rural_status;
+        d.properties["urban"] = nationalHealthData[i].urban_rural_status;
         d.properties["elder"] = +nationalHealthData[i].elderly_percentage;
         d.properties["hosp"] = +nationalHealthData[i].number_of_hospitals;
         d.properties["phys"] = +nationalHealthData[i].number_of_primary_care_physicians;
@@ -101,21 +99,19 @@ Promise.all([
       units: "%",
       title: "% of People with High Cholestoral"},}
 
-  testData.forEach(d => {
-    d.time = +d.time;
-    d.distance = +d.distance;
-  });
 
   const createMap = () => {
 
+    d3.selectAll("svg").remove();
     var attribute1 = document.getElementById("attribute");
     var attribute1_value = attribute1.value
 
     var attribute2 = document.getElementById("attribute2");
     var attribute2_value = attribute2.value
+
     console.log(health_data_dict[attribute1_value])
-  scatterplot = new Scatterplot({ parentElement: '#scatterplot'}, geoData.objects.counties.geometries, health_data_dict[attribute1_value], health_data_dict[attribute2_value]);
-  scatterplot.updateVis();
+    scatterplot = new Scatterplot({ parentElement: '.viz'}, geoData.objects.counties.geometries, health_data_dict[attribute1_value], health_data_dict[attribute2_value]);
+    scatterplot.updateVis();
 
     //const choroplethMap1 = new ChoroplethMap({ 
     //  parentElement: '.viz',   
@@ -127,6 +123,22 @@ Promise.all([
 }
 
   document.getElementById("button").addEventListener("click", createMap);
+  d3.selectAll('.legend-btn').on('click', function() {
+    // Toggle 'inactive' class
+    d3.select(this).classed('inactive', !d3.select(this).classed('inactive'));
+    
+    // Check which categories are active
+    let selectedStatus = [];
+    d3.selectAll('.legend-btn:not(.inactive)').each(function() {
+      selectedStatus.push(d3.select(this).attr('urban-status'));
+    });
+    console.log(selectedStatus)
+  
+    // Filter data accordingly and update vis
+    scatterplot.data = geoData.objects.counties.geometries.filter(d => selectedStatus.includes(d.properties["urban"]));
+    scatterplot.updateVis();
+  });
+  
 }
 
 

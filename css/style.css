@@ -47,3 +47,40 @@
   font-size: 14px;
   font-weight: 600;
 }
+
+/* Legend */
+.legend {
+    margin: 20px 0;
+    list-style: none;
+    padding: 0;
+  }
+  .legend-btn {
+    display: inline-block;
+    margin: 0 20px 0 0;
+    cursor: pointer;
+    transition: all ease-in-out 200ms;
+  }
+  .legend-btn:hover.legend-btn.inactive:hover  {
+    opacity: 0.7;
+  }
+  .legend-btn.inactive {
+    opacity: 0.5;
+  }
+  .legend-symbol {
+    width: 12px;
+    height: 12px;
+    margin-right: 3px;
+    display: inline-block;
+  }
+  .legend-btn[urban-status="Rural"] .legend-symbol {
+    background: #d3eecd;
+  }
+  .legend-btn[urban-status="Suburban"] .legend-symbol {
+    background: #7bc77e;
+  }
+  .legend-btn[urban-status="Small City"] .legend-symbol {
+    background: #2a8d46;
+  }
+  .legend-btn[urban-status="Urban"] .legend-symbol {
+    background: #1b562b;
+  }

@@ -10,7 +10,7 @@ class Scatterplot {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 700,
       containerHeight: _config.containerHeight || 500,
-      margin: _config.margin || {top: 25, right: 60, bottom: 20, left: 65},
+      margin: _config.margin || {top: 25, right: 60, bottom: 20, left: 100},
       tooltipPadding: _config.tooltipPadding || 15
     }
     this.data = _data;
@@ -28,11 +28,12 @@ class Scatterplot {
     // Calculate inner chart size. Margin specifies the space around the actual chart.
     vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
     vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
+    vis.data.filter(d => d.properties[this.acronym1.acronym] >= 0 && d.properties[this.acronym2.acronym] >= 0)
 
     // Initialize scales
     vis.colorScale = d3.scaleOrdinal()
-        .range(['#d3eecd', '#7bc77e', '#2a8d46']) // light green to dark green
-        .domain(['Easy','Intermediate','Difficult']);
+        .range(['#d3eecd', '#7bc77e', '#2a8d46', "#1b562b"]) // light green to dark green
+        .domain(['Rural','Suburban','Small City', "Urban"]);
 
     vis.xScale = d3.scaleLinear()
         .range([0, vis.width]);
@@ -45,16 +46,17 @@ class Scatterplot {
         .ticks(6)
         .tickSize(-vis.height - 10)
         .tickPadding(10)
-        .tickFormat(d => d + ' km');
+        .tickFormat(d => d + ` ${this.acronym1.units}`);
 
     vis.yAxis = d3.axisLeft(vis.yScale)
         .ticks(6)
         .tickSize(-vis.width - 10)
         .tickPadding(10)
-        .tickFormat(d => d + ' km');;
+        .tickFormat(d => d + ` ${this.acronym2.units}`);;
 
     // Define size of SVG drawing area
-    vis.svg = d3.select(vis.config.parentElement)
+    vis.svg = d3.select(vis.config.parentElement).append('svg')
+        .attr('class', 'center-container')
         .attr('width', vis.config.containerWidth)
         .attr('height', vis.config.containerHeight);
 
@@ -79,18 +81,19 @@ class Scatterplot {
         .attr('x', vis.width + 10)
         .attr('dy', '.71em')
         .style('text-anchor', 'end')
-        .text(this.acronym2.title);
+        .text(this.acronym1.title);
 
     vis.svg.append('text')
         .attr('class', 'axis-title')
         .attr('x', 0)
         .attr('y', 0)
         .attr('dy', '.71em')
-        .text(this.acronym1.title);
+        .text(this.acronym2.title);
 
     // Specificy accessor functions
-    vis.xValue = d => d.properties["pov"];
-    vis.yValue = d => d.properties["med"];
+    vis.colorValue = d => d.properties.urban;
+    vis.xValue = d => d.properties[this.acronym1.acronym];
+    vis.yValue = d => d.properties[this.acronym2.acronym];
   }
 
   /**
@@ -111,20 +114,23 @@ class Scatterplot {
         .attr('r', 4)
         .attr('cy', d => vis.yScale(vis.yValue(d)))
         .attr('cx', d => vis.xScale(vis.xValue(d)))
-        .attr('fill', 'red');
+        .attr('fill', d => vis.colorScale(vis.colorValue(d)));
 
 
     // Tooltip event listeners
     vis.circles
         .on('mouseover', (event,d) => {
-            const popDensity = d.properties[this.acronym] ? `<strong>${d.properties[this.acronym]}</strong> ${this.units}` : 'No data available'; 
+            const popDensity1 = d.properties[this.acronym1.acronym] ? `<strong>${d.properties[this.acronym1.acronym]}</strong> ${this.acronym1.units}` : 'No data available'; 
+            const popDensity2 = d.properties[this.acronym2.acronym] ? `<strong>${d.properties[this.acronym2.acronym]}</strong> ${this.acronym2.units}` : 'No data available'; 
             d3.select('#tooltip')
                 .style('display', 'block')
                 .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
                 .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
                 .html(`
                 <div class="tooltip-title">${d.properties.name}</div>
-                <div>${popDensity}</div>
+                <div>${popDensity1}</div>
+                <div>${popDensity2}</div>
+                <div>${d.properties.urban}</div>
                 `);
             })
         .on('mouseleave', () => {
