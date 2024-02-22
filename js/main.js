@@ -86,7 +86,7 @@ Promise.all([
       "percent_high_blood_pressure": {
         acronym: "hbp",
         units: "%",
-        title: "a"},
+        title: "% of People with high blood pressure"},
       "percent_coronary_heart_disease": {
         acronym: "chd",
         units: "%",
@@ -101,16 +101,18 @@ Promise.all([
         title: "% of People with High Cholestoral",
       },
     };
+
+
     var element = document.getElementById("cloropleth");
-    element.setAttribute("style", "");
-    var element = document.getElementById("histogram");
     element.setAttribute("style", "display: none;");
+    var element = document.getElementById("histogram");
+    element.setAttribute("style", "");
     var element = document.getElementById("scatterplot");
     element.setAttribute("style", "display: none;");
 
     const createMap = () => {
       d3.selectAll("svg").remove();
-      var attribute1 = document.getElementById("attribute");
+      var attribute1 = document.getElementById("attribute1");
       var attribute1_value = attribute1.value;
 
       var attribute2 = document.getElementById("attribute2");
@@ -123,6 +125,12 @@ Promise.all([
         health_data_dict[attribute2_value]
       );
       scatterplot.updateVis();
+
+      const histogram = new Histogram(
+        { parentElement: ".viz_hi" },
+        geoData.objects.counties.geometries,
+        health_data_dict[attribute1_value]
+      );
 
       const choroplethMap1 = new ChoroplethMap(
         {
@@ -145,35 +153,40 @@ Promise.all([
       );
     };
 
-    const changeDivsScatter = () => {
+
+    const loadScatter = () => {
       var element = document.getElementById("cloropleth");
       element.setAttribute("style", "display: none;");
       var element = document.getElementById("histogram");
       element.setAttribute("style", "display: none;");
       var element = document.getElementById("scatterplot");
       element.setAttribute("style", "");
+      document.getElementById("attributes2-div").setAttribute("style", "");
     };
-    const changeDivsCloro = () => {
+    const loadCloro = () => {
       var element = document.getElementById("scatterplot");
       element.setAttribute("style", "display: none;");
       var element = document.getElementById("histogram");
       element.setAttribute("style", "display: none;");
       var element = document.getElementById("cloropleth");
       element.setAttribute("style", "");
+      document.getElementById("attributes2-div").setAttribute("style", "");
+
     };
-    const changeDivsHisto = () => {
+    const loadHisto = () => {
       var element = document.getElementById("scatterplot");
       element.setAttribute("style", "display: none;");
       var element = document.getElementById("cloropleth");
       element.setAttribute("style", "display: none;");
       var element = document.getElementById("histogram");
       element.setAttribute("style", "");
+      document.getElementById("attributes2-div").setAttribute("style", "display: none;");
     };
 
     document.getElementById("button").addEventListener("click", createMap);
-    document.getElementById("button_sc").addEventListener("click", changeDivsScatter);
-    document.getElementById("button_cl").addEventListener("click", changeDivsCloro);
-    //document.getElementById("button_hi").addEventListener("click", changeDivsHisto);
+    document.getElementById("button_sc").addEventListener("click", loadScatter);
+    document.getElementById("button_cl").addEventListener("click", loadCloro);
+    document.getElementById("button_hi").addEventListener("click", loadHisto);
 
     d3.selectAll(".legend-btn").on("click", function () {
       // Toggle 'inactive' class
