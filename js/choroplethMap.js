@@ -103,7 +103,7 @@ class ChoroplethMap {
                       }
                     });
 
-      vis.counties
+    vis.counties
                 .on('mousemove', (event, d) => {
                     const popDensity = d.properties[this.acronym] ? `<strong>${d.properties[this.acronym]}</strong> ${this.units}` : 'No data available'; 
                     d3.select('#tooltip')

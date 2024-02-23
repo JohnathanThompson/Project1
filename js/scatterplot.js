@@ -24,11 +24,16 @@ class Scatterplot {
    */
   initVis() {
     let vis = this;
+    vis.data.filter(d => d.properties[this.acronym1.acronym] >= 0); // Filter out numbers that are greater than or equal to zero
 
+    vis.data.forEach(d => {
+        if (d.properties[this.acronym1.acronym] < 0) { // Check if the property value is less than zero
+            console.log(d.properties[this.acronym1.acronym]); // Log the property value
+        }
+    });
     // Calculate inner chart size. Margin specifies the space around the actual chart.
     vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
     vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
-    vis.data.filter(d => d.properties[this.acronym1.acronym] >= 0 && d.properties[this.acronym2.acronym] >= 0)
 
     // Initialize scales
     vis.colorScale = d3.scaleOrdinal()
@@ -106,10 +111,9 @@ class Scatterplot {
     vis.xScale.domain([0, d3.max(vis.data, vis.xValue)]);
     vis.yScale.domain([0, d3.max(vis.data, vis.yValue)]);
 
-    // Add circles
     vis.circles = vis.chart.selectAll('.point')
-        .data(vis.data, d => d.properties.name)
-      .join('circle')
+        .data(vis.data.filter(d => vis.yValue(d) > 0 && vis.xValue(d) > 0), d => d.properties.name)
+        .join('circle')
         .attr('class', 'point')
         .attr('r', 4)
         .attr('cy', d => vis.yScale(vis.yValue(d)))

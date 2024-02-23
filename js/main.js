@@ -129,7 +129,8 @@ Promise.all([
       const histogram = new Histogram(
         { parentElement: ".viz_hi" },
         geoData.objects.counties.geometries,
-        health_data_dict[attribute1_value]
+        health_data_dict[attribute1_value],
+        "parent"
       );
 
       const choroplethMap1 = new ChoroplethMap(
