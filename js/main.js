@@ -114,9 +114,11 @@ Promise.all([
       d3.selectAll("svg").remove();
       var attribute1 = document.getElementById("attribute1");
       var attribute1_value = attribute1.value;
+      console.log(attribute1_value)
 
       var attribute2 = document.getElementById("attribute2");
       var attribute2_value = attribute2.value;
+      console.log(attribute2_value)
 
       scatterplot = new Scatterplot(
         { parentElement: ".viz_sc" },

@@ -10,7 +10,7 @@ class Scatterplot {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 700,
       containerHeight: _config.containerHeight || 500,
-      margin: _config.margin || {top: 25, right: 60, bottom: 20, left: 100},
+      margin: _config.margin || {top: 25, right: 0, bottom: 0, left: 0},
       tooltipPadding: _config.tooltipPadding || 15
     }
     this.data = _data;
@@ -150,6 +150,35 @@ class Scatterplot {
     vis.yAxisG
         .call(vis.yAxis)
         .call(g => g.select('.domain').remove())
+
+    const brushed = (event) => {
+        if (!event.selection) return;
+        const [[x0, y0], [x1, y1]] = event.selection;
+        console.log(event.selection)
+        var selectedBins = vis.circles
+                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym] - vis.config.margin.left)
+                && x1 >= vis.xScale(d.properties[this.acronym1.acronym] + vis.config.margin.right)
+                && y0 <= vis.yScale(d.properties[this.acronym2.acronym] - vis.config.margin.top)
+                && y1 >= vis.yScale(d.properties[this.acronym2.acronym] + vis.config.margin.bottom))
+        var mergedBins = []
+        vis.circles.classed("selected", (d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym] + vis.config.margin.left) 
+                            && x1 >= vis.xScale(d.properties[this.acronym1.acronym] - vis.config.margin.right)
+                            && y0 <= vis.yScale(d.properties[this.acronym2.acronym] + vis.config.margin.top) 
+                            && y1 >= vis.yScale(d.properties[this.acronym2.acronym] - vis.config.margin.bottom));
+        vis.circles.filter(".selected").style("fill", "blue");
+        vis.circles.filter(":not(.selected)").style("fill", d => vis.colorScale(vis.colorValue(d)));
+      }
+  
+    // Add brush
+    var brush = d3
+    .brush()
+    .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
+    .on("start brush end", brushed);
+
+    // Append brush
+    vis.svg.append("g").attr("class", "brush").call(brush);
+
+  
   }
 
 }
