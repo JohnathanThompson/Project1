@@ -48,6 +48,81 @@
   font-weight: 600;
 }
 
+#title {
+  background-color: #5e69a1;
+  padding-left: 50px;
+  padding-right: 50px;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  h1 {
+    color:#fff;
+    font-size: 48px;
+    font-weight: 800;
+    text-align: center;
+  }
+  h2 {
+    color:#fff;
+    font-size: 24px;
+    text-align: center;
+  }
+}
+
+
+#scatterplot-title {
+  text-align: center;
+  font-size: 24px;
+}
+#scatterplot {
+  margin-left: 34%;
+}
+#hi {
+  display:inline-block;
+  padding: 0 200px;
+}
+#cloropleth {
+  margin-left: 100px;
+  display:flex
+}
+#graphTitle {
+  text-align: center;
+  color:white;
+  font-size: 32px;
+  background-color: #5e69a1;
+}
+
+#options {
+  display:flex;
+  #attributes-div {
+    background-color: #778fd6;
+    border-color: #000;
+    border-radius: 4px;
+    color:#fff;
+    text-align: center;
+    font-size: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin-left: 500px;
+
+  }
+  #attributes2-div {
+    background-color: #778fd6;
+    border-color:#000;
+    border-width: 4px;
+    border-radius: 4px;
+    text-align: center;
+    color:#fff;
+    font-size: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin-left: 200px;
+  }
+  #button {
+    margin-left: 200px;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
 /* Legend */
 .legend {
     margin: 20px 0;

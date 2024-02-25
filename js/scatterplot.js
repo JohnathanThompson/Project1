@@ -10,7 +10,7 @@ class Scatterplot {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 700,
       containerHeight: _config.containerHeight || 500,
-      margin: _config.margin || {top: 25, right: 0, bottom: 0, left: 0},
+      margin: _config.margin || {top: 25, right: 60, bottom: 20, left: 100},
       tooltipPadding: _config.tooltipPadding || 15
     }
     this.data = _data;
@@ -156,15 +156,15 @@ class Scatterplot {
         const [[x0, y0], [x1, y1]] = event.selection;
         console.log(event.selection)
         var selectedBins = vis.circles
-                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym] - vis.config.margin.left)
-                && x1 >= vis.xScale(d.properties[this.acronym1.acronym] + vis.config.margin.right)
-                && y0 <= vis.yScale(d.properties[this.acronym2.acronym] - vis.config.margin.top)
-                && y1 >= vis.yScale(d.properties[this.acronym2.acronym] + vis.config.margin.bottom))
+                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym])
+                && x1 >= vis.xScale(d.properties[this.acronym1.acronym])
+                && y0 <= vis.yScale(d.properties[this.acronym2.acronym])
+                && y1 >= vis.yScale(d.properties[this.acronym2.acronym]))
         var mergedBins = []
-        vis.circles.classed("selected", (d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym] + vis.config.margin.left) 
-                            && x1 >= vis.xScale(d.properties[this.acronym1.acronym] - vis.config.margin.right)
-                            && y0 <= vis.yScale(d.properties[this.acronym2.acronym] + vis.config.margin.top) 
-                            && y1 >= vis.yScale(d.properties[this.acronym2.acronym] - vis.config.margin.bottom));
+        vis.circles.classed("selected", (d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym]) 
+                            && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
+                            && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym]) 
+                            && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]));
         vis.circles.filter(".selected").style("fill", "blue");
         vis.circles.filter(":not(.selected)").style("fill", d => vis.colorScale(vis.colorValue(d)));
       }

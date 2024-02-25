@@ -102,16 +102,9 @@ Promise.all([
       },
     };
 
-
-    var element = document.getElementById("cloropleth");
-    element.setAttribute("style", "display: none;");
-    var element = document.getElementById("histogram");
-    element.setAttribute("style", "");
-    var element = document.getElementById("scatterplot");
-    element.setAttribute("style", "display: none;");
-
     const createMap = () => {
       d3.selectAll("svg").remove();
+
       var attribute1 = document.getElementById("attribute1");
       var attribute1_value = attribute1.value;
       console.log(attribute1_value)
@@ -120,6 +113,10 @@ Promise.all([
       var attribute2_value = attribute2.value;
       console.log(attribute2_value)
 
+      var element = document.getElementById("graphs");
+      element.setAttribute("style", "");
+      
+      document.getElementById("scatterplot-title").innerText =  `${health_data_dict[attribute1_value].title} vs ${health_data_dict[attribute2_value].title}`
       scatterplot = new Scatterplot(
         { parentElement: ".viz_sc" },
         geoData.objects.counties.geometries,
@@ -135,6 +132,13 @@ Promise.all([
         "parent"
       );
 
+      const histogram2 = new Histogram(
+        { parentElement: ".viz_hi2" },
+        geoData.objects.counties.geometries,
+        health_data_dict[attribute2_value],
+        "parent"
+      );
+
       const choroplethMap1 = new ChoroplethMap(
         {
           parentElement: ".viz_cl",
@@ -147,7 +151,7 @@ Promise.all([
 
       const choroplethMap2 = new ChoroplethMap(
         {
-          parentElement: ".viz_cl",
+          parentElement: ".viz_cl2",
         },
         geoData,
         health_data_dict[attribute2_value].title,
@@ -156,40 +160,7 @@ Promise.all([
       );
     };
 
-
-    const loadScatter = () => {
-      var element = document.getElementById("cloropleth");
-      element.setAttribute("style", "display: none;");
-      var element = document.getElementById("histogram");
-      element.setAttribute("style", "display: none;");
-      var element = document.getElementById("scatterplot");
-      element.setAttribute("style", "");
-      document.getElementById("attributes2-div").setAttribute("style", "");
-    };
-    const loadCloro = () => {
-      var element = document.getElementById("scatterplot");
-      element.setAttribute("style", "display: none;");
-      var element = document.getElementById("histogram");
-      element.setAttribute("style", "display: none;");
-      var element = document.getElementById("cloropleth");
-      element.setAttribute("style", "");
-      document.getElementById("attributes2-div").setAttribute("style", "");
-
-    };
-    const loadHisto = () => {
-      var element = document.getElementById("scatterplot");
-      element.setAttribute("style", "display: none;");
-      var element = document.getElementById("cloropleth");
-      element.setAttribute("style", "display: none;");
-      var element = document.getElementById("histogram");
-      element.setAttribute("style", "");
-      document.getElementById("attributes2-div").setAttribute("style", "display: none;");
-    };
-
     document.getElementById("button").addEventListener("click", createMap);
-    document.getElementById("button_sc").addEventListener("click", loadScatter);
-    document.getElementById("button_cl").addEventListener("click", loadCloro);
-    document.getElementById("button_hi").addEventListener("click", loadHisto);
 
     d3.selectAll(".legend-btn").on("click", function () {
       // Toggle 'inactive' class

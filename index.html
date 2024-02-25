@@ -6,10 +6,11 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>US Counties Data Visualizer</h1>
-    <h2>John Thompson</h2>
+    <div id="title">
+        <h1>US Counties Data Visualizer</h1>
+        <h2>John Thompson</h2>
+    </div>
 
-    <div class="viz"></div>
     <div id="tooltip"></div>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
     <script src="js/topojson.v3.js"></script>
@@ -18,30 +19,48 @@
     <script src="js/choroplethMap.js"></script>
     <script src="js/histogram.js"></script>
     <script src="js/main.js"></script>
-    <button id="button_sc">Scatterplot</button>
-    <button id="button_cl">Cloropleth</button>
-    <button id="button_hi">Histogram</button>
 
-    <div id="scatterplot">
-        <div class="viz_sc"></div>
-        <ul class="legend">
-            <li class="legend-btn" urban-status="Rural"><span class="legend-symbol"></span> Rural</li>
-            <li class="legend-btn" urban-status="Suburban"><span class="legend-symbol"></span> Suburban</li>
-            <li class="legend-btn" urban-status="Small City"><span class="legend-symbol"></span> Small City</li>
-            <li class="legend-btn" urban-status="Urban"><span class="legend-symbol"></span> Urban</li>
-        </ul>
-    </div>
-    <div id="cloropleth">
-        <div class="viz_cl"></div>
+    <div id="graphs" style="display: none;">
+        <h2 id="graphTitle">Scatterplot</h2><br>
+        <h2 id="scatterplot-title"></h2>
+        <div id="scatterplot">
+            <div class="viz_sc"></div>
+            <ul class="legend">
+                <li class="legend-btn" urban-status="Rural"><span class="legend-symbol"></span> Rural</li>
+                <li class="legend-btn" urban-status="Suburban"><span class="legend-symbol"></span> Suburban</li>
+                <li class="legend-btn" urban-status="Small City"><span class="legend-symbol"></span> Small City</li>
+                <li class="legend-btn" urban-status="Urban"><span class="legend-symbol"></span> Urban</li>
+            </ul>
+        </div>
+        <h2 id="graphTitle">Histogram</h2>
+        <div id="histograms">
+            <div id="hi">
+                <div class="viz_hi"></div>
+                <div class="filter_hi" id="filter_hi">
+                    <button id="filter">Filter</button>
+                    <button id="remove-filter">Remove Filter</button>
+                </div>
+            </div>
+            <div id="hi">
+                <div class="viz_hi2"></div>
+                <div class="filter_hi" id="filter_hi">
+                    <button id="filter">Filter</button>
+                    <button id="remove-filter">Remove Filter</button>
+                </div>
+            </div>
+        </div>
+        <h2 id="graphTitle">Cloropleths</h2><br>
+        <div id="cloropleth">
+            <div class="viz_cl"></div>
+            <div class="viz_cl2"></div>
+        </div>
     </div>
 
-    <div id="histogram">
-        <div class="viz_hi"></div>
-        <button id="filter">Filter</button>
-        <button id="remove-filter">Remove Filter</button>
-        <div class="filter_hi" id="filter_hi" style="display: none;">
-            <h4>Attribute Filter</h4>
-            <select name="attribute_his" id="attribute1_his">
+    <br><br>
+    <div id="options">
+        <div id="attributes-div">
+            <h4>Attribute 1</h4>
+            <select name="attributes" id="attribute1">
                 <option value="poverty_perc">Poverty Percentage</option>
                 <option value="median_household_income">Median Household Income</option>
                 <option value="education_less_than_high_school_percent">High School Graduation Percentage</option>
@@ -59,51 +78,29 @@
                 <option value="percent_stroke">% Stroke</option>
                 <option value="percent_high_cholesterol">High Cholestoral</option>
             </select>
-            <button id="button_filter_hi">Click me Filter</button>
         </div>
+        <div id="attributes2-div">
+            <h4>Attribute 2</h4>
+            <select name="attributes2" id="attribute2">
+                <option value="poverty_perc">Poverty Percentage</option>
+                <option value="median_household_income">Median Household Income</option>
+                <option value="education_less_than_high_school_percent">High School Graduation Percentage</option>
+                <option value="air_quality">Air Quality</option>
+                <option value="park_access">Park Access</option>
+                <option value="percent_inactive">Percent Inactive</option>
+                <option value="percent_smoking">Percent Smoking</option>
+                <option value="urban_rural_status">Urban or Rural</option>
+                <option value="elderly_percentage">Percentage of people Elderly</option>
+                <option value="number_of_hospitals"># of Hospitals</option>
+                <option value="number_of_primary_care_physicians"># of primary care physicians</option>
+                <option value="percent_no_heath_insurance">% no Health Insurance</option>
+                <option value="percent_high_blood_pressure">% High Blood Pressure</option>
+                <option value="percent_coronary_heart_disease">% Coronary Heart Disease</option>
+                <option value="percent_stroke">% Stroke</option>
+                <option value="percent_high_cholesterol">High Cholestoral</option>
+            </select>  
+        </div>
+        <button id="button">Make Graphs</button>
     </div>
-
-
-    <h4>Attribute 1</h4>
-    <select name="attributes" id="attribute1">
-        <option value="poverty_perc">Poverty Percentage</option>
-        <option value="median_household_income">Median Household Income</option>
-        <option value="education_less_than_high_school_percent">High School Graduation Percentage</option>
-        <option value="air_quality">Air Quality</option>
-        <option value="park_access">Park Access</option>
-        <option value="percent_inactive">Percent Inactive</option>
-        <option value="percent_smoking">Percent Smoking</option>
-        <option value="urban_rural_status">Urban or Rural</option>
-        <option value="elderly_percentage">Percentage of people Elderly</option>
-        <option value="number_of_hospitals"># of Hospitals</option>
-        <option value="number_of_primary_care_physicians"># of primary care physicians</option>
-        <option value="percent_no_heath_insurance">% no Health Insurance</option>
-        <option value="percent_high_blood_pressure">% High Blood Pressure</option>
-        <option value="percent_coronary_heart_disease">% Coronary Heart Disease</option>
-        <option value="percent_stroke">% Stroke</option>
-        <option value="percent_high_cholesterol">High Cholestoral</option>
-      </select>
-    <div id="attributes2-div">
-      <h4>Attribute 2</h4>
-      <select name="attributes2" id="attribute2">
-          <option value="poverty_perc">Poverty Percentage</option>
-          <option value="median_household_income">Median Household Income</option>
-          <option value="education_less_than_high_school_percent">High School Graduation Percentage</option>
-          <option value="air_quality">Air Quality</option>
-          <option value="park_access">Park Access</option>
-          <option value="percent_inactive">Percent Inactive</option>
-          <option value="percent_smoking">Percent Smoking</option>
-          <option value="urban_rural_status">Urban or Rural</option>
-          <option value="elderly_percentage">Percentage of people Elderly</option>
-          <option value="number_of_hospitals"># of Hospitals</option>
-          <option value="number_of_primary_care_physicians"># of primary care physicians</option>
-          <option value="percent_no_heath_insurance">% no Health Insurance</option>
-          <option value="percent_high_blood_pressure">% High Blood Pressure</option>
-          <option value="percent_coronary_heart_disease">% Coronary Heart Disease</option>
-          <option value="percent_stroke">% Stroke</option>
-          <option value="percent_high_cholesterol">High Cholestoral</option>
-        </select>  
-    </div>
-    <button id="button">Click me</button>
 </body>
 </html>
