@@ -123,11 +123,17 @@ class Histogram {
       vis.rectangles.filter(":not(.selected)").style("fill", "#69b3a2");
     }
 
+    const brushend = (event) => {
+      if (!event.selection) return;
+      console.log(event.selection)
+    }
+
     // Add brush
     var brush = d3
       .brushX()
       .extent([[0, 0],[vis.width, vis.height]])
-      .on("start brush end", brushed);
+      .on("start brush", brushed)
+      .on("end", brushend);
 
     // Append brush
     vis.svg.append("g").attr("class", "brush").call(brush);

@@ -26,11 +26,6 @@ class Scatterplot {
     let vis = this;
     vis.data.filter(d => d.properties[this.acronym1.acronym] >= 0); // Filter out numbers that are greater than or equal to zero
 
-    vis.data.forEach(d => {
-        if (d.properties[this.acronym1.acronym] < 0) { // Check if the property value is less than zero
-            console.log(d.properties[this.acronym1.acronym]); // Log the property value
-        }
-    });
     // Calculate inner chart size. Margin specifies the space around the actual chart.
     vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
     vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
@@ -107,6 +102,32 @@ class Scatterplot {
   updateVis() {
     let vis = this;
     
+    const brushed = (event) => {
+        if (!event.selection) return;
+        const [[x0, y0], [x1, y1]] = event.selection;
+        var selectedBins = vis.circles
+                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym])
+                && x1 >= vis.xScale(d.properties[this.acronym1.acronym])
+                && y0 <= vis.yScale(d.properties[this.acronym2.acronym])
+                && y1 >= vis.yScale(d.properties[this.acronym2.acronym]))
+        var mergedBins = []
+        vis.circles.classed("selected", (d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym]) 
+                            && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
+                            && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym]) 
+                            && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]));
+        vis.circles.filter(".selected").style("fill", "blue");
+        vis.circles.filter(":not(.selected)").style("fill", d => vis.colorScale(vis.colorValue(d)));
+      }
+  
+    // Add brush
+    var brush = d3
+    .brush()
+    .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
+    .on("start brush end", brushed);
+
+    // Append brush
+    vis.svg.append("g").attr("class", "brush").call(brush);
+    
     // Set the scale input domains
     vis.xScale.domain([0, d3.max(vis.data, vis.xValue)]);
     vis.yScale.domain([0, d3.max(vis.data, vis.yValue)]);
@@ -151,32 +172,6 @@ class Scatterplot {
         .call(vis.yAxis)
         .call(g => g.select('.domain').remove())
 
-    const brushed = (event) => {
-        if (!event.selection) return;
-        const [[x0, y0], [x1, y1]] = event.selection;
-        console.log(event.selection)
-        var selectedBins = vis.circles
-                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym])
-                && x1 >= vis.xScale(d.properties[this.acronym1.acronym])
-                && y0 <= vis.yScale(d.properties[this.acronym2.acronym])
-                && y1 >= vis.yScale(d.properties[this.acronym2.acronym]))
-        var mergedBins = []
-        vis.circles.classed("selected", (d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym]) 
-                            && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
-                            && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym]) 
-                            && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]));
-        vis.circles.filter(".selected").style("fill", "blue");
-        vis.circles.filter(":not(.selected)").style("fill", d => vis.colorScale(vis.colorValue(d)));
-      }
-  
-    // Add brush
-    var brush = d3
-    .brush()
-    .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
-    .on("start brush end", brushed);
-
-    // Append brush
-    vis.svg.append("g").attr("class", "brush").call(brush);
 
   
   }
