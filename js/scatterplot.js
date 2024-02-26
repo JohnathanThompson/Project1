@@ -16,6 +16,7 @@ class Scatterplot {
     this.data = _data;
     this.acronym1 = _acronym1
     this.acronym2 = _acronym2
+    this.selectedData = []
     this.initVis();
   }
   
@@ -60,6 +61,38 @@ class Scatterplot {
         .attr('width', vis.config.containerWidth)
         .attr('height', vis.config.containerHeight);
 
+    const brushed = (event) => {
+        if (!event.selection) return;
+        const [[x0, y0], [x1, y1]] = event.selection;
+        vis.circles.classed("selected", (d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym]) 
+                            && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
+                            && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym]) 
+                            && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]));
+        vis.circles.filter(".selected").style("fill", "blue");
+        vis.circles.filter(":not(.selected)").style("fill", d => vis.colorScale(vis.colorValue(d)));
+      }
+
+    const brushend = (event) => {
+        if (!event.selection) return;
+        const [[x0, y0], [x1, y1]] = event.selection;
+        vis.circles.filter(".selected").style("fill", d => vis.colorValue(d));
+        var selectedData = vis.data
+                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym])
+                && x1 >= vis.xScale(d.properties[this.acronym1.acronym])
+                && y0 <= vis.yScale(d.properties[this.acronym2.acronym])
+                && y1 >= vis.yScale(d.properties[this.acronym2.acronym]))
+        vis.data = selectedData
+        this.selectedData = vis.data
+        vis.updateVis()}
+    // Add brush
+    var brush = d3
+    .brush()
+    .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
+    .on("start brush end", brushed)
+    .on("end", brushend);
+
+    // Append brush
+    vis.svg.append("g").attr("class", "brush").call(brush);
     // Append group element that will contain our actual chart 
     // and position it according to the given margin config
     vis.chart = vis.svg.append('g')
@@ -101,36 +134,13 @@ class Scatterplot {
    */
   updateVis() {
     let vis = this;
-    
-    const brushed = (event) => {
-        if (!event.selection) return;
-        const [[x0, y0], [x1, y1]] = event.selection;
-        var selectedBins = vis.circles
-                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym])
-                && x1 >= vis.xScale(d.properties[this.acronym1.acronym])
-                && y0 <= vis.yScale(d.properties[this.acronym2.acronym])
-                && y1 >= vis.yScale(d.properties[this.acronym2.acronym]))
-        var mergedBins = []
-        vis.circles.classed("selected", (d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym]) 
-                            && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
-                            && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym]) 
-                            && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]));
-        vis.circles.filter(".selected").style("fill", "blue");
-        vis.circles.filter(":not(.selected)").style("fill", d => vis.colorScale(vis.colorValue(d)));
-      }
-  
-    // Add brush
-    var brush = d3
-    .brush()
-    .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
-    .on("start brush end", brushed);
 
-    // Append brush
-    vis.svg.append("g").attr("class", "brush").call(brush);
+    if (this.selectedData.length != 0) {vis.data = this.data.filter(d => this.selectedData.includes(d))}
     
     // Set the scale input domains
-    vis.xScale.domain([0, d3.max(vis.data, vis.xValue)]);
-    vis.yScale.domain([0, d3.max(vis.data, vis.yValue)]);
+    vis.xScale.domain([d3.min(this.data, vis.xValue), d3.max(this.data, vis.xValue)]);
+    vis.yScale.domain([d3.min(this.data, vis.yValue), d3.max(this.data, vis.yValue)]);
+    
 
     vis.circles = vis.chart.selectAll('.point')
         .data(vis.data.filter(d => vis.yValue(d) > 0 && vis.xValue(d) > 0), d => d.properties.name)

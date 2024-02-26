@@ -13,10 +13,10 @@ class Histogram {
       tooltipPadding: _config.tooltipPadding || 15,
     };
     this.data = _data;
-    this.mergedBins = []
+    this.mergedBins = [];
     this.id = _id;
 
-    this.acronym1 = _acronym1
+    this.acronym1 = _acronym1;
     this.initVis();
   }
 
@@ -105,7 +105,10 @@ class Histogram {
       .data(bins)
       .join("rect") // Add a new rect for each new elements // get the already existing elements as well
       .attr("x", 1)
-      .attr("transform", (d) => "translate(" + x(d.x0) + "," + y(d.length) + ")")
+      .attr(
+        "transform",
+        (d) => "translate(" + x(d.x0) + "," + y(d.length) + ")"
+      )
       .attr("width", (d) => x(d.x1) - x(d.x0))
       .attr("height", (d) => vis.height - y(d.length))
       .style("fill", "#69b3a2");
@@ -114,30 +117,33 @@ class Histogram {
       if (!event.selection) return;
       var [x0, x1] = event.selection;
       var selectedBins = bins.filter((d) => x0 <= x(d.x0) && x1 >= x(d.x1));
-      var mergedBins = []
+      var mergedBins = [];
       for (let i = 0; i < selectedBins.length; i++) {
-        mergedBins = mergedBins.concat(selectedBins[i])}
-      this.mergedBins = mergedBins
+        mergedBins = mergedBins.concat(selectedBins[i]);
+      }
+      this.mergedBins = mergedBins;
       vis.rectangles.classed("selected", (d) => x0 <= x(d.x0) && x1 >= x(d.x1));
       vis.rectangles.filter(".selected").style("fill", "blue");
       vis.rectangles.filter(":not(.selected)").style("fill", "#69b3a2");
-    }
+    };
 
     const brushend = (event) => {
       if (!event.selection) return;
-      console.log(event.selection)
-    }
+      console.log(event.selection);
+    };
 
     // Add brush
     var brush = d3
       .brushX()
-      .extent([[0, 0],[vis.width, vis.height]])
+      .extent([
+        [0, 0],
+        [vis.width, vis.height],
+      ])
       .on("start brush", brushed)
       .on("end", brushend);
 
     // Append brush
     vis.svg.append("g").attr("class", "brush").call(brush);
-
 
     // Add tooltip
     vis.rectangles
@@ -156,23 +162,25 @@ class Histogram {
       });
 
     const filterMap = () => {
-        var element = document.getElementById("filter_hi");
-        console.log(element)
-        element.setAttribute("style", "");
-        console.log(this.mergedBins)
-        if (this.mergedBins) {
-          const newHistogram = new Histogram(
-            { parentElement: ".viz" },
-            this.mergedBins,
-            this.acronym1,
-            "test"
-          );
-        }
+      var element = document.getElementById("filter_hi");
+      console.log(element);
+      element.setAttribute("style", "");
+      console.log(this.mergedBins);
+      if (this.mergedBins) {
+        const newHistogram = new Histogram(
+          { parentElement: ".viz" },
+          this.mergedBins,
+          this.acronym1,
+          "test"
+        );
       }
-    const removeFilter = () => {d3.select("#test").remove();}
+    };
+    const removeFilter = () => {
+      d3.select("#test").remove();
+    };
     document.getElementById("filter").addEventListener("click", filterMap);
-    document.getElementById("remove-filter").addEventListener("click", removeFilter);
-
-
+    document
+      .getElementById("remove-filter")
+      .addEventListener("click", removeFilter);
   }
 }
