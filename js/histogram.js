@@ -9,7 +9,7 @@ class Histogram {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 700,
       containerHeight: _config.containerHeight || 500,
-      margin: _config.margin || { top: 25, right: 60, bottom: 20, left: 100 },
+      margin: _config.margin || { top: 50, right: 60, bottom: 50, left: 100 },
       tooltipPadding: _config.tooltipPadding || 15,
     };
     this.data = _data;
@@ -74,6 +74,27 @@ initVis() {
     vis.svg.append("g")
       .attr("class", "y-axis")
       .call(vis.yAxis);
+
+    // Append both axis titles
+    vis.svg.append('text')
+        .attr('y', vis.height + 25)
+        .attr('x', vis.width)
+        .attr('dy', '.71em')
+        .style('text-anchor', 'end')
+        .text(this.acronym1.title);
+
+    vis.svg.append('text')
+        .attr('x', -80)
+        .attr('y', -5)
+        .attr('dy', '.71em')
+        .text("Frequency");
+
+    vis.svg.append('text')
+        .attr('x', vis.width/5)
+        .attr('y', -40)
+        .attr('font-size', "px")
+        .attr('dy', '.71em')
+        .text(`${this.acronym1.title} Histogram`);
 
     const brushed = (event) => {
       if (!event.selection) return;
@@ -184,7 +205,7 @@ initVis() {
           .style("left", event.pageX + vis.config.tooltipPadding + "px")
           .style("top", event.pageY + vis.config.tooltipPadding + "px")
           .html(`<div class="tooltip-title">${d.length} counties</div>
-                 <div>${d.x0} - ${d.x1}</div>`);
+                 <div>${d.x0} ${this.acronym1.units} - ${d.x1} ${this.acronym1.units}</div>`);
       })
       .on("mouseleave", () => {
         d3.select("#tooltip").style("display", "none");

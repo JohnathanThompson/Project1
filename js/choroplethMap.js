@@ -42,6 +42,8 @@ class ChoroplethMap {
   initVis() {
     let vis = this;
 
+    vis.us.objects.counties.geometries.filter(d => d.properties[this.acronym] >= 0);
+
     // Calculate inner chart size. Margin specifies the space around the actual chart.
     vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
     vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
@@ -145,39 +147,6 @@ class ChoroplethMap {
 
     }
 
-    // Add legend manually
-    const legendWidth = 150;
-    const legendHeight = 12;
-    const legendPadding = 5;
-    const legendTicks = 6;
-
-    const legendScale = d3.scaleLinear()
-        .domain(d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.acronym]))
-        .range([0, legendWidth]);
-
-    const legendAxis = d3.axisBottom(legendScale)
-        .ticks(legendTicks)
-        .tickSize(1)
-        .tickFormat(d3.format(".2f"));
-
-    const legend = vis.svg.append("g")
-        .attr("class", "legend")
-        .attr("transform", `translate(${vis.config.legendLeft},${vis.config.containerHeight - vis.config.legendBottom})`);
-
-    legend.append("g")
-        .attr("class", "legend-axis")
-        .attr("transform", `translate(0, ${legendPadding})`)
-        .call(legendAxis);
-
-    legend.selectAll(".legend-rect")
-        .data(d3.range(d3.min(vis.data.objects.counties.geometries, d => d.properties[this.acronym]), d3.max(vis.data.objects.counties.geometries, d => d.properties[this.acronym]), (d3.max(vis.data.objects.counties.geometries, d => d.properties[this.acronym]) - d3.min(vis.data.objects.counties.geometries, d => d.properties[this.acronym])) / legendWidth))
-        .enter().append("rect")
-        .attr("class", "legend-rect")
-        .attr("x", (d, i) => i)
-        .attr("y", -6)
-        .attr("width", 1)
-        .attr("height", legendHeight)
-        .attr("fill", d => vis.colorScale(d));
 
     document.getElementById("remove-filter").addEventListener("click", resetZoom)
     document.getElementById("remove-filter2").addEventListener("click", resetZoom)
@@ -186,26 +155,9 @@ class ChoroplethMap {
   updateVis() {
 
     let vis = this;
-
-    // console.log(this.selectedCounties.length)
-    // console.log(vis.us)
-    // console.log(vis.data.objects.counties)
-    if (vis.selectedCounties.length === 0) {
-          vis.us = vis.ogData; // Reset the data to original
-      } else {
-          // Filter the data to only include selected counties
-          const selectedIds = vis.selectedCounties.map(d => d.id); // Assuming there's an ID field in your data
-          vis.us = {
-              ...vis.us,
-              objects: {
-                  ...vis.us.objects,
-                  counties: {
-                      ...vis.us.objects.counties,
-                      geometries: vis.us.objects.counties.geometries.filter(d => selectedIds.includes(d.id))
-                  }
-              }
-          };
-      }
+    
+    if (this.selectedCounties.length != 0) {vis.us.objects.counties.geometries = this.selectedCounties.filter(d => this.selectedCounties.includes(d))}
+    else {vis.us = this.ogData}
 
     vis.counties = vis.g.append("g")
                 .attr("id", "counties")
@@ -239,6 +191,39 @@ class ChoroplethMap {
                   });
 
 
+    // Add legend manually
+    const legendWidth = 250;
+    const legendHeight = 12;
+    const legendPadding = 5;
+    const legendTicks = 6;
+
+    const legendScale = d3.scaleLinear()
+        .domain(d3.extent(vis.us.objects.counties.geometries, d => d.properties[this.acronym]))
+        .range([0, legendWidth]);
+
+    const legendAxis = d3.axisBottom(legendScale)
+        .ticks(legendTicks)
+        .tickSize(1)
+        .tickFormat(d3.format("i"));
+
+    const legend = vis.svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${vis.config.legendLeft},${vis.config.containerHeight - vis.config.legendBottom})`);
+
+    legend.append("g")
+        .attr("class", "legend-axis")
+        .attr("transform", `translate(0, ${legendPadding})`)
+        .call(legendAxis);
+
+    legend.selectAll(".legend-rect")
+        .data(d3.range(d3.min(vis.us.objects.counties.geometries, d => d.properties[this.acronym]), d3.max(vis.us.objects.counties.geometries, d => d.properties[this.acronym]), (d3.max(vis.us.objects.counties.geometries, d => d.properties[this.acronym]) - d3.min(vis.us.objects.counties.geometries, d => d.properties[this.acronym])) / legendWidth))
+        .enter().append("rect")
+        .attr("class", "legend-rect")
+        .attr("x", (d, i) => i)
+        .attr("y", -6)
+        .attr("width", 1)
+        .attr("height", legendHeight)
+        .attr("fill", d => vis.colorScale(d));
 
     vis.g.append("path")
                 .datum(topojson.mesh(vis.us, vis.us.objects.states, function(a, b) { return a !== b; }))
