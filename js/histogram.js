@@ -13,6 +13,7 @@ class Histogram {
       tooltipPadding: _config.tooltipPadding || 15,
     };
     this.data = _data;
+    this.ogData = _data;
     this.mergedBins = [];
     this.id = _id;
 
@@ -23,164 +24,116 @@ class Histogram {
   /**
    * We initialize scales/axes and append static elements, such as axis titles.
    */
-  initVis() {
+initVis() {
     let vis = this;
 
     // set the dimensions and margins of the graph
-    vis.width =
-      vis.config.containerWidth -
-      vis.config.margin.left -
-      vis.config.margin.right;
-    vis.height =
-      vis.config.containerHeight -
-      vis.config.margin.top -
-      vis.config.margin.bottom;
+    vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
+    vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
 
-    // Append the svg object to the parent element
-    vis.svg = d3
-      .select(vis.config.parentElement)
-      .attr("id", vis.id)
-      .append("svg")
-      .attr(
-        "width",
-        vis.width + vis.config.margin.left + vis.config.margin.right
-      )
-      .attr(
-        "height",
-        vis.height + vis.config.margin.top + vis.config.margin.bottom
-      )
-      .append("g")
-      .attr(
-        "transform",
-        "translate(" +
-          vis.config.margin.left +
-          "," +
-          vis.config.margin.top +
-          ")"
-      );
+    // Create SVG
+    vis.svg = d3.select(vis.config.parentElement)
+      .append('svg')
+      .attr('width', vis.config.containerWidth)
+      .attr('height', vis.config.containerHeight)
+      .append('g')
+      .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
 
-    // X axis scale
-    var x = d3
-      .scaleLinear()
-      .domain([0, d3.max(vis.data, (d) => d.properties[this.acronym1.acronym])])
-      .range([0, vis.width]);
-
-    // Append X axis
-    vis.svg
-      .append("g")
-      .attr("transform", "translate(0," + vis.height + ")")
-      .call(d3.axisBottom(x));
+    // Define scales
+    vis.xScale = d3.scaleLinear()
+      .range([0, vis.width])
+      .domain([0, d3.max(vis.data, d => d.properties[vis.acronym1.acronym])]);
 
     // Y axis scale
-    var y = d3.scaleLinear().range([vis.height, 0]);
+    vis.yScale = d3.scaleLinear().range([vis.height, 0]);
 
-    // Filter out undefined elements from data
-    this.data = this.data.filter(function (element) {
-      return element !== undefined;
-    });
+    // Initialize axes
+    vis.xAxis = d3.axisBottom(vis.xScale)
+
+    vis.yAxis = d3.axisLeft(vis.yScale)
 
     // Create histogram layout
-    var histogram = d3
-      .histogram()
-      .value((d) => d.properties[this.acronym1.acronym])
-      .domain(x.domain())
-      .thresholds(x.ticks(40));
+    vis.histogram = d3.histogram()
+      .value(d => d.properties[vis.acronym1.acronym])
+      .domain(vis.xScale.domain())
+      .thresholds(vis.xScale.ticks(40));
 
     // Generate bins
-    var bins = histogram(this.data);
+    vis.bins = vis.histogram(vis.data);
 
-    // Y axis: scale and draw:
-    var y = d3.scaleLinear().range([vis.height, 0]);
-    y.domain([
-      0,
-      d3.max(bins, function (d) {
-        return d.length;
-      }),
-    ]); // d3.hist has to be called before the Y axis obviously
-    vis.svg.append("g").call(d3.axisLeft(y));
+    // Update yScale domain based on data
+    vis.yScale.domain([0, d3.max(vis.bins, d => d.length)]);
 
-    // Join the rect with the bins data
-    vis.rectangles = vis.svg
-      .selectAll("rect")
-      .data(bins)
-      .join("rect") // Add a new rect for each new elements // get the already existing elements as well
-      .attr("x", 1)
-      .attr(
-        "transform",
-        (d) => "translate(" + x(d.x0) + "," + y(d.length) + ")"
-      )
-      .attr("width", (d) => x(d.x1) - x(d.x0))
-      .attr("height", (d) => vis.height - y(d.length))
-      .style("fill", "#69b3a2");
+    // Append X axis
+    vis.svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0, ${vis.height})`)
+      .call(vis.xAxis);
+
+    // Append Y axis
+    vis.svg.append("g")
+      .attr("class", "y-axis")
+      .call(vis.yAxis);
 
     const brushed = (event) => {
       if (!event.selection) return;
       var [x0, x1] = event.selection;
-      var selectedBins = bins.filter((d) => x0 <= x(d.x0) && x1 >= x(d.x1));
+      var selectedBins = vis.bins.filter(d => x0 <= vis.xScale(d.x0) && x1 >= vis.xScale(d.x1));
       var mergedBins = [];
       for (let i = 0; i < selectedBins.length; i++) {
         mergedBins = mergedBins.concat(selectedBins[i]);
       }
-      this.mergedBins = mergedBins;
-      vis.rectangles.classed("selected", (d) => x0 <= x(d.x0) && x1 >= x(d.x1));
-      vis.rectangles.filter(".selected").style("fill", "blue");
-      vis.rectangles.filter(":not(.selected)").style("fill", "#69b3a2");
-    };
+      vis.mergedBins = mergedBins;
+      vis.bars.classed("selected", d => x0 <= vis.xScale(d.x0) && x1 >= vis.xScale(d.x1));
+      vis.bars.filter(".selected").style("fill", "blue");
+      vis.bars.filter(":not(.selected)").style("fill", "#69b3a2");
+    }
 
     const brushend = (event) => {
       if (!event.selection) return;
       console.log(event.selection);
-    };
+      console.log(vis.mergedBins);
+    }
 
-    // Add brush
-    var brush = d3
-      .brushX()
-      .extent([
-        [0, 0],
-        [vis.width, vis.height],
-      ])
+    // Append brush
+    vis.brush = d3.brushX()
+      .extent([[0, 0], [vis.width, vis.height]])
       .on("start brush", brushed)
       .on("end", brushend);
 
-    // Append brush
-    vis.svg.append("g").attr("class", "brush").call(brush);
+    vis.svg.append("g")
+      .attr("class", "brush")
+      .call(vis.brush);
+    // Draw bars
+    vis.bars = vis.svg.selectAll(".bar")
+      .data(vis.bins)
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", d => vis.xScale(d.x0))
+      .attr("y", d => vis.yScale(d.length))
+      .attr("width", d => vis.xScale(d.x1) - vis.xScale(d.x0) - 1)
+      .attr("height", d => vis.height - vis.yScale(d.length))
+      .style("fill", "#69b3a2");
+
 
     // Add tooltip
-    vis.rectangles
+    vis.bars
       .on("mousemove", (event, d) => {
-        d3
-          .select("#tooltip")
+        d3.select("#tooltip")
           .style("display", "block")
           .style("left", event.pageX + vis.config.tooltipPadding + "px")
-          .style("top", event.pageY + vis.config.tooltipPadding + "px").html(`
-                      <div class="tooltip-title">${d.length} counties</div>
-                      <div>${d.x0}${this.acronym1.units} - ${d.x1}${this.acronym1.units}</div>
-                    `);
+          .style("top", event.pageY + vis.config.tooltipPadding + "px")
+          .html(`<div class="tooltip-title">${d.length} counties</div>
+                 <div>${d.x0}${vis.acronym1.units} - ${d.x1}${vis.acronym1.units}</div>`);
       })
       .on("mouseleave", () => {
         d3.select("#tooltip").style("display", "none");
       });
 
-    const filterMap = () => {
-      var element = document.getElementById("filter_hi");
-      console.log(element);
-      element.setAttribute("style", "");
-      console.log(this.mergedBins);
-      if (this.mergedBins) {
-        const newHistogram = new Histogram(
-          { parentElement: ".viz" },
-          this.mergedBins,
-          this.acronym1,
-          "test"
-        );
-      }
-    };
-    const removeFilter = () => {
-      d3.select("#test").remove();
-    };
-    document.getElementById("filter").addEventListener("click", filterMap);
-    document
-      .getElementById("remove-filter")
-      .addEventListener("click", removeFilter);
   }
+  updateVis() {
+    let vis = this;
+  
+  }
+
 }

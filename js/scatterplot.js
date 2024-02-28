@@ -14,6 +14,7 @@ class Scatterplot {
       tooltipPadding: _config.tooltipPadding || 15
     }
     this.data = _data;
+    this.ogData = this.data
     this.acronym1 = _acronym1
     this.acronym2 = _acronym2
     this.selectedData = []
@@ -77,10 +78,10 @@ class Scatterplot {
         const [[x0, y0], [x1, y1]] = event.selection;
         vis.circles.filter(".selected").style("fill", d => vis.colorValue(d));
         var selectedData = vis.data
-                .filter((d) => x0 <= vis.xScale(d.properties[this.acronym1.acronym])
-                && x1 >= vis.xScale(d.properties[this.acronym1.acronym])
-                && y0 <= vis.yScale(d.properties[this.acronym2.acronym])
-                && y1 >= vis.yScale(d.properties[this.acronym2.acronym]))
+                .filter((d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym])
+                && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
+                && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym])
+                && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]))
         vis.data = selectedData
         this.selectedData = vis.data
         vis.updateVis()}
@@ -123,6 +124,13 @@ class Scatterplot {
         .attr('dy', '.71em')
         .text(this.acronym2.title);
 
+    const resetZoom = () => {
+        this.selectedData = [];
+        vis.updateVis();
+    }
+
+    document.getElementById("scatterplot-zoom").addEventListener("click", resetZoom)
+
     // Specificy accessor functions
     vis.colorValue = d => d.properties.urban;
     vis.xValue = d => d.properties[this.acronym1.acronym];
@@ -135,11 +143,13 @@ class Scatterplot {
   updateVis() {
     let vis = this;
 
-    if (this.selectedData.length != 0) {vis.data = this.data.filter(d => this.selectedData.includes(d))}
+    console.log(this.selectedData.length)
+    if (this.selectedData.length != 0) {vis.data = vis.data.filter(d => this.selectedData.includes(d))}
+    else {vis.data = this.ogData}
     
     // Set the scale input domains
-    vis.xScale.domain([d3.min(this.data, vis.xValue), d3.max(this.data, vis.xValue)]);
-    vis.yScale.domain([d3.min(this.data, vis.yValue), d3.max(this.data, vis.yValue)]);
+    vis.xScale.domain([d3.min(vis.data, vis.xValue), d3.max(vis.data, vis.xValue)]);
+    vis.yScale.domain([d3.min(vis.data, vis.yValue), d3.max(vis.data, vis.yValue)]);
     
 
     vis.circles = vis.chart.selectAll('.point')

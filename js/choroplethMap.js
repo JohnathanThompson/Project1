@@ -10,7 +10,7 @@ class ChoroplethMap {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 1000,
       containerHeight: _config.containerHeight || 500,
-      margin: _config.margin || {top: 10, right: 10, bottom: 10, left: 10},
+      margin: _config.margin || {top: 0, right: 0, bottom: 0, left: 0},
       tooltipPadding: 10,
       legendBottom: 50,
       legendLeft: 50,
@@ -18,6 +18,7 @@ class ChoroplethMap {
       legendRectWidth: 150
     }
     this.data = _data;
+    this.ogData = this.data
     // this.config = _config;
 
     this.us = _data;
@@ -26,8 +27,9 @@ class ChoroplethMap {
 
     this.units = _units
 
+    this.selectedCounties = []
+
     this.acronym = _acronym
-    console.log(this.acronym)
 
     this.active = d3.select(null);
 
@@ -88,6 +90,61 @@ class ChoroplethMap {
             .attr('width', vis.width + vis.config.margin.left + vis.config.margin.right)
             .attr('height', vis.height + vis.config.margin.top + vis.config.margin.bottom)
 
+        const brushed = (event) => {
+          if (!event.selection) return;
+          const [[x0, y0], [x1, y1]] = event.selection;
+
+          // Filter counties based on the brush selection
+          const selected = vis.counties.filter(d => {
+            const [cx, cy] = vis.path.centroid(d);
+            return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+          });
+
+          // Clear previously selected counties
+          vis.counties.classed('selected', false).style("fill", d => {
+                      if (d.properties[this.acronym]) {
+                        return vis.colorScale(d.properties[this.acronym]);
+                      } else {
+                        return 'url(#lightstripe)';
+                      }})
+
+          // Highlight selected counties
+          selected.classed('selected', true).style("fill", "red");
+        }
+
+      const brushend = (event) => {
+        if (!event.selection) return;
+        const [[x0, y0], [x1, y1]] = event.selection;
+
+        // Filter counties based on the brush selection and store in the selectedCounties array
+        const selected = vis.counties.filter(d => {
+          const [cx, cy] = vis.path.centroid(d);
+          return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+        });
+
+        this.selectedCounties = selected.data();
+
+        // Perform actions with the selected counties data, such as saving it to an array
+        vis.updateVis()
+      }
+
+      // Add brush
+      var brush = d3
+      .brush()
+      .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
+      .on("start brush end", brushed)
+      .on("end", brushend);
+
+      // Append brush
+        vis.svg.append("g").attr("class", "brush").call(brush);
+
+  }
+  updateVis() {
+
+    let vis = this;
+
+    if (this.selectedCounties.length != 0) {vis.us.objects.counties.geometries = this.selectedCounties.filter(d => this.selectedCounties.includes(d))}
+    else {vis.us = this.ogData}
 
     vis.counties = vis.g.append("g")
                 .attr("id", "counties")
@@ -126,8 +183,7 @@ class ChoroplethMap {
                 .datum(topojson.mesh(vis.us, vis.us.objects.states, function(a, b) { return a !== b; }))
                 .attr("id", "state-borders")
                 .attr("d", vis.path);
-
-  }
+}
 
   
 }

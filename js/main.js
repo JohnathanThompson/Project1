@@ -148,6 +148,7 @@ Promise.all([
         health_data_dict[attribute1_value].units,
         health_data_dict[attribute1_value].acronym
       );
+      choroplethMap1.updateVis();
 
       const choroplethMap2 = new ChoroplethMap(
         {
@@ -158,6 +159,7 @@ Promise.all([
         health_data_dict[attribute2_value].units,
         health_data_dict[attribute2_value].acronym
       );
+      choroplethMap2.updateVis();
     };
 
     document.getElementById("button").addEventListener("click", createMap);

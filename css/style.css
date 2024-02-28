@@ -80,8 +80,7 @@
   padding: 0 200px;
 }
 #cloropleth {
-  margin-left: 100px;
-  display:flex
+  display:inline-block;
 }
 #graphTitle {
   text-align: center;
