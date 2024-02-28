@@ -103,6 +103,8 @@ Promise.all([
       },
     };
 
+    console.log("hi")
+
     const createMap = () => {
       d3.selectAll("svg").remove();
 
@@ -118,29 +120,44 @@ Promise.all([
       element.setAttribute("style", "");
       
       document.getElementById("scatterplot-title").innerText =  `${health_data_dict[attribute1_value].title} vs ${health_data_dict[attribute2_value].title}`
-      scatterplot = new Scatterplot(
-        { parentElement: ".viz_sc" },
-        geoData.objects.counties.geometries,
-        health_data_dict[attribute1_value],
-        health_data_dict[attribute2_value]
-      );
-      scatterplot.updateVis();
+      if (attribute1_value != "urban_rural_status" && attribute2_value != "urban_rural_status") {
+        console.log(attribute1_value)
+        console.log(attribute2_value)
+        document.getElementById("scatterplot-div").setAttribute("style", "");
+        scatterplot = new Scatterplot(
+          { parentElement: ".viz_sc" },
+          geoData.objects.counties.geometries,
+          health_data_dict[attribute1_value],
+          health_data_dict[attribute2_value]
+        );
+        scatterplot.updateVis();
+      }
+      else {document.getElementById("scatterplot-div").setAttribute("style", "display: none");}
 
-      const histogram = new Histogram(
-        { parentElement: ".viz_hi" },
-        geoData.objects.counties.geometries,
-        health_data_dict[attribute1_value],
-        "parent"
-      );
-      histogram.updateVis();
 
-      const histogram2 = new Histogram(
-        { parentElement: ".viz_hi2" },
-        geoData.objects.counties.geometries,
-        health_data_dict[attribute2_value],
-        "parent"
-      );
-      histogram2.updateVis();
+      if (attribute1_value != "urban_rural_status") {
+        document.getElementById("hi").setAttribute("style", "");
+        const histogram = new Histogram(
+          { parentElement: ".viz_hi" },
+          geoData.objects.counties.geometries,
+          health_data_dict[attribute1_value],
+          "parent"
+        );
+        histogram.updateVis();
+      }
+      else {document.getElementById("hi").setAttribute("style", "display: none");}
+
+      if (attribute2_value != "urban_rural_status") {
+        document.getElementById("hi2").setAttribute("style", "");
+        const histogram2 = new Histogram(
+          { parentElement: ".viz_hi2" },
+          geoData.objects.counties.geometries,
+          health_data_dict[attribute2_value],
+          "parent"
+        );
+        histogram2.updateVis();
+      }
+      else {document.getElementById("hi2").setAttribute("style", "display: none");}
 
       const choroplethMap1 = new ChoroplethMap(
         {

@@ -73,14 +73,19 @@
   font-size: 24px;
 }
 #scatterplot {
-  margin-left: 30%;
+  margin-left: 33%;
 }
 #hi {
   display:inline-block;
   padding: 0 200px;
 }
-#cloropleth {
+#hi2 {
   display:inline-block;
+  padding: 0 200px;
+}
+#cl {
+  display:inline-block;
+  padding: 0 50px;
 }
 #graphTitle {
   text-align: center;
