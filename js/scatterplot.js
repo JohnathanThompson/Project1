@@ -10,7 +10,7 @@ class Scatterplot {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 700,
       containerHeight: _config.containerHeight || 500,
-      margin: _config.margin || {top: 25, right: 60, bottom: 20, left: 100},
+      margin: _config.margin || {top: 25, right: 60, bottom: 60, left: 100},
       tooltipPadding: _config.tooltipPadding || 15
     }
     this.data = _data;
@@ -68,7 +68,7 @@ class Scatterplot {
         vis.circles.classed("selected", (d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym]) 
                             && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
                             && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym]) 
-                            && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]));
+                            && y1 - 25 >= vis.yScale(d.properties[this.acronym2.acronym]));
         vis.circles.filter(".selected").style("fill", "blue");
         vis.circles.filter(":not(.selected)").style("fill", d => vis.colorScale(vis.colorValue(d)));
       }
@@ -81,7 +81,7 @@ class Scatterplot {
                 .filter((d) => x0 - vis.config.margin.left <= vis.xScale(d.properties[this.acronym1.acronym])
                 && x1 - vis.config.margin.right * 2 + 20 >= vis.xScale(d.properties[this.acronym1.acronym])
                 && y0 - vis.config.margin.top <= vis.yScale(d.properties[this.acronym2.acronym])
-                && y1 - vis.config.margin.bottom >= vis.yScale(d.properties[this.acronym2.acronym]))
+                && y1 - 25 >= vis.yScale(d.properties[this.acronym2.acronym]))
         vis.data = selectedData
         this.selectedData = vis.data
         vis.updateVis()}
@@ -111,8 +111,8 @@ class Scatterplot {
     // Append both axis titles
     vis.chart.append('text')
         .attr('class', 'axis-title')
-        .attr('y', vis.height - 15)
-        .attr('x', vis.width + 10)
+        .attr('y', vis.height + 30)
+        .attr('x', vis.width)
         .attr('dy', '.71em')
         .style('text-anchor', 'end')
         .text(this.acronym1.title);
@@ -144,7 +144,7 @@ class Scatterplot {
   updateVis() {
     let vis = this;
 
-    if (this.selectedData.length != 0) {vis.data = vis.data.filter(d => this.selectedData.includes(d))}
+if (this.selectedData.length != 0) {vis.data = vis.data.filter(d => this.selectedData.includes(d))}
     
     // Set the scale input domains
     vis.xScale.domain([d3.min(vis.data, vis.xValue), d3.max(vis.data, vis.xValue)]);
@@ -173,6 +173,8 @@ class Scatterplot {
                 .html(`
                 <div class="tooltip-title">${d.properties.name}</div>
                 <div class="tooltip-title">${d.properties["state"]}</div>
+                <div>${popDensity1}</div>
+                <div>${popDensity2}</div>
                 <div>${d.properties.urban}</div>
                 `);
             })
