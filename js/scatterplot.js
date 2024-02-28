@@ -126,6 +126,7 @@ class Scatterplot {
 
     const resetZoom = () => {
         this.selectedData = [];
+        vis.data = this.ogData
         vis.updateVis();
     }
 
@@ -143,9 +144,7 @@ class Scatterplot {
   updateVis() {
     let vis = this;
 
-    console.log(this.selectedData.length)
     if (this.selectedData.length != 0) {vis.data = vis.data.filter(d => this.selectedData.includes(d))}
-    else {vis.data = this.ogData}
     
     // Set the scale input domains
     vis.xScale.domain([d3.min(vis.data, vis.xValue), d3.max(vis.data, vis.xValue)]);
@@ -173,8 +172,7 @@ class Scatterplot {
                 .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
                 .html(`
                 <div class="tooltip-title">${d.properties.name}</div>
-                <div>${popDensity1}</div>
-                <div>${popDensity2}</div>
+                <div class="tooltip-title">${d.properties["state"]}</div>
                 <div>${d.properties.urban}</div>
                 `);
             })

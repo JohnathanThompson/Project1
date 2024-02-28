@@ -26,7 +26,7 @@ class Histogram {
    */
 initVis() {
     let vis = this;
-
+    vis.data.filter(d => d.properties[this.acronym1.acronym] >= 0);
     // set the dimensions and margins of the graph
     vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
     vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
@@ -83,7 +83,7 @@ initVis() {
       for (let i = 0; i < selectedBins.length; i++) {
         mergedBins = mergedBins.concat(selectedBins[i]);
       }
-      vis.mergedBins = mergedBins;
+      this.mergedBins = mergedBins;
       vis.bars.classed("selected", d => x0 <= vis.xScale(d.x0) && x1 >= vis.xScale(d.x1));
       vis.bars.filter(".selected").style("fill", "blue");
       vis.bars.filter(":not(.selected)").style("fill", "#69b3a2");
@@ -91,8 +91,8 @@ initVis() {
 
     const brushend = (event) => {
       if (!event.selection) return;
-      console.log(event.selection);
-      console.log(vis.mergedBins);
+      this.data = this.mergedBins;
+      vis.updateVis();
     }
 
     // Append brush
@@ -104,6 +104,13 @@ initVis() {
     vis.svg.append("g")
       .attr("class", "brush")
       .call(vis.brush);
+
+    vis.chart = vis.svg.append('g')
+        .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
+
+
+    // Update yScale domain based on data
+    vis.yScale.domain([0, d3.max(vis.bins, d => d.length)]);
     // Draw bars
     vis.bars = vis.svg.selectAll(".bar")
       .data(vis.bins)
@@ -115,6 +122,59 @@ initVis() {
       .attr("height", d => vis.height - vis.yScale(d.length))
       .style("fill", "#69b3a2");
 
+    const resetZoom = () => {
+        this.mergedBins = [];
+        vis.histogram.thresholds(vis.xScale.ticks(40))
+        vis.updateVis();
+        this.mergedBins = [];
+        vis.histogram.thresholds(vis.xScale.ticks(40))
+        vis.updateVis();
+    }
+
+    document.getElementById("remove-filter").addEventListener("click", resetZoom)
+    document.getElementById("remove-filter2").addEventListener("click", resetZoom)
+
+
+  }
+  updateVis() {
+    let vis = this;
+
+    if (this.mergedBins.length != 0) {
+      vis.data = vis.data.filter(d => this.mergedBins.includes(d));
+    } else {
+      vis.data = this.ogData;
+    }
+
+    // Generate bins
+    vis.bins = vis.histogram(vis.data);
+
+    // Update yScale domain based on data
+    vis.yScale.domain([0, d3.max(vis.bins, d => d.length)]);
+
+    // Update xScale domain based on data
+    vis.xScale.domain([d3.min(vis.data, d => d.properties[vis.acronym1.acronym]), d3.max(vis.data, d => d.properties[vis.acronym1.acronym])]);
+
+    // Update the x-axis
+    vis.svg.select(".x-axis")
+      .transition()
+      .duration(500)
+      .call(vis.xAxis);
+
+    // Update the y-axis
+    vis.svg.select(".y-axis")
+      .transition()
+      .duration(500)
+      .call(vis.yAxis);
+
+    // Update the existing bars
+    vis.svg.selectAll(".bar")
+      .data(vis.bins)
+      .transition()
+      .duration(500)
+      .attr("x", d => vis.xScale(d.x0))
+      .attr("y", d => vis.yScale(d.length))
+      .attr("width", d => vis.xScale(d.x1) - vis.xScale(d.x0) - 1)
+      .attr("height", d => vis.height - vis.yScale(d.length));
 
     // Add tooltip
     vis.bars
@@ -124,16 +184,12 @@ initVis() {
           .style("left", event.pageX + vis.config.tooltipPadding + "px")
           .style("top", event.pageY + vis.config.tooltipPadding + "px")
           .html(`<div class="tooltip-title">${d.length} counties</div>
-                 <div>${d.x0}${vis.acronym1.units} - ${d.x1}${vis.acronym1.units}</div>`);
+                 <div>${d.x0} - ${d.x1}</div>`);
       })
       .on("mouseleave", () => {
         d3.select("#tooltip").style("display", "none");
       });
 
-  }
-  updateVis() {
-    let vis = this;
-  
   }
 
 }

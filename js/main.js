@@ -13,6 +13,7 @@ Promise.all([
     geoData.objects.counties.geometries.forEach(d => {
       for (let i = 0; i < nationalHealthData.length; i++) {
         if (d.id === nationalHealthData[i].cnty_fips) {
+          d.properties["state"] = nationalHealthData[i].display_name.split(",")[1].substring(2, 4)
           d.properties["pov"] = +nationalHealthData[i].poverty_perc;
           d.properties["med"] = +nationalHealthData[i].median_household_income
           d.properties["edu"] = +nationalHealthData[i].education_less_than_high_school_percent;
@@ -131,6 +132,7 @@ Promise.all([
         health_data_dict[attribute1_value],
         "parent"
       );
+      histogram.updateVis();
 
       const histogram2 = new Histogram(
         { parentElement: ".viz_hi2" },
@@ -138,6 +140,7 @@ Promise.all([
         health_data_dict[attribute2_value],
         "parent"
       );
+      histogram2.updateVis();
 
       const choroplethMap1 = new ChoroplethMap(
         {
@@ -173,7 +176,6 @@ Promise.all([
       d3.selectAll('.legend-btn:not(.inactive)').each(function() {
         selectedStatus.push(d3.select(this).attr('urban-status'));
       });
-      console.log(selectedStatus)
 
       // Filter data accordingly and update vis
       scatterplot.data = geoData.objects.counties.geometries.filter(d => selectedStatus.includes(d.properties["urban"]));
