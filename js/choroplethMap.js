@@ -62,14 +62,15 @@ class ChoroplethMap {
 
     vis.svg.append('rect')
             .attr('class', 'background center-container')
-            .attr('height', vis.config.containerWidth ) //height + margin.top + margin.bottom)
-            .attr('width', vis.config.containerHeight + 100) //width + margin.left + margin.right)
+            .attr('height', vis.config.containerWidth )
+            .attr('width', vis.config.containerHeight + 100)
             .on('click', vis.clicked);
 
   
     vis.projection = d3.geoAlbersUsa()
             .translate([vis.width /2 , vis.height / 2])
             .scale(vis.width);
+
 
     if (this.acronym == "urban") {
       vis.colorScale = d3.scaleOrdinal()
@@ -83,54 +84,52 @@ class ChoroplethMap {
           .interpolate(d3.interpolateHcl);
     }
 
-        const brushed = (event) => {
-          if (!event.selection) return;
-          const [[x0, y0], [x1, y1]] = event.selection;
+    const brushed = (event) => {
+      const [[x0, y0], [x1, y1]] = event.selection;
 
-          // Filter counties based on the brush selection
-          const selected = vis.counties.filter(d => {
-            const [cx, cy] = vis.path.centroid(d);
-            return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
-          });
+      // Filter counties based on the brush selection
+      const selected = vis.counties.filter(d => {
+        const [cx, cy] = vis.path.centroid(d);
+        return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+      });
 
-          // Clear previously selected counties
-          vis.counties.classed('selected', false).style("fill", d => {
-                      if (d.properties[this.acronym]) {
-                        return vis.colorScale(d.properties[this.acronym]);
-                      } else {
-                        return 'url(#lightstripe)';
-                      }})
+      // Clear previously selected counties
+      vis.counties.classed('selected', false).style("fill", d => {
+                  if (d.properties[this.acronym]) {
+                    return vis.colorScale(d.properties[this.acronym]);
+                  } else {
+                    return 'url(#lightstripe)';
+                  }})
 
-          // Highlight selected counties
-          selected.classed('selected', true).style("fill", "red");
-        }
+      // Highlight selected counties
+      selected.classed('selected', true).style("fill", "blue");
+    }
 
-      const brushend = (event) => {
-        if (!event.selection) return;
-        const [[x0, y0], [x1, y1]] = event.selection;
+    const brushend = (event) => {
+      if (!event.selection) return;
+      const [[x0, y0], [x1, y1]] = event.selection;
 
-        // Filter counties based on the brush selection and store in the selectedCounties array
-        const selected = vis.counties.filter(d => {
-          const [cx, cy] = vis.path.centroid(d);
-          return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
-        });
+      // Filter counties based on the brush selection and store in the selectedCounties array
+      const selected = vis.counties.filter(d => {
+        const [cx, cy] = vis.path.centroid(d);
+        return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+      });
 
-        vis.data = selected.data();
-        this.selectedData = vis.data
+      vis.data = selected.data();
 
-        // Perform actions with the selected counties data, such as saving it to an array
-        vis.updateVis()
-      }
+      vis.updateVis()
+    }
 
-      // Add brush
-      var brush = d3
-      .brush()
-      .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
-      .on("start brush end", brushed)
-      .on("end", brushend);
+    // Add brush
+    var brush = d3
+    .brush()
+    .extent([[0, 0],[vis.config.containerWidth, vis.config.containerHeight]])
+    .on("start brush end", brushed)
+    .on("end", brushend);
 
-      // Append brush
-        vis.svg.append("g").attr("class", "brush").call(brush);
+    // Append brush
+    vis.svg.append("g").attr("class", "brush").call(brush);
+
     vis.path = d3.geoPath()
             .projection(vis.projection);
 

@@ -144,7 +144,7 @@ class Scatterplot {
   updateVis() {
     let vis = this;
 
-if (this.selectedData.length != 0) {vis.data = vis.data.filter(d => this.selectedData.includes(d))}
+    if (this.selectedData.length != 0) {vis.data = vis.data.filter(d => this.selectedData.includes(d))}
     
     // Set the scale input domains
     vis.xScale.domain([d3.min(vis.data, vis.xValue), d3.max(vis.data, vis.xValue)]);

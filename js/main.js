@@ -42,7 +42,7 @@ Promise.all([
       },
       "median_household_income": {
         acronym: "med",
-        units: "Median",
+        units: "dollars",
         title: "Median Income"},
       "education_less_than_high_school_percent": {
         acronym: "edu",
